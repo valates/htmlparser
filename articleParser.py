@@ -9,6 +9,8 @@ def main(args):
     url = 'https://www.nytimes.com/2017/01/19/us/trump-cabinet-picks-inauguration.html'
 
     todo
+    #http://time.com/4642876/donald-trump-presidency-first-days-inauguration/?xid=homepage
+    #http://time.com/4642838/samsung-galaxy-note-seven-smartphones-overheating-explanation/
 
     reuters
     AP
