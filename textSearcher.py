@@ -58,7 +58,6 @@ def html_searcher(text, tags, destructive=True):
     >>> b11
     ''
     """
-    #need better solution to doublepass
     assert type(text) is str
     assert type(tags) is list
     contained_text = []
@@ -77,11 +76,14 @@ def html_searcher(text, tags, destructive=True):
         start_tag += cur_char
 
         correct_start_tag = True
-        for tag in tags:
-            cur_class = 'class="' + tag + '"'
-            if cur_class not in start_tag:
-                correct_start_tag = False
-                break
+        if (len(tags) != 0 and tags[0] == 'VANILLA'):
+            correct_start_tag = (start_tag == baseline_start + '>')
+        else:
+            for tag in tags:
+                cur_class = 'class="' + tag + '"'
+                if cur_class not in start_tag:
+                    correct_start_tag = False
+                    break
         if correct_start_tag:
             end_tag = '</' + baseline_tag + '>'
             end_index = remaining_text.find(end_tag)
@@ -89,7 +91,7 @@ def html_searcher(text, tags, destructive=True):
                 remaining_text = ''
             else:
                 text_grabbed = remaining_text[(potential_start_index + len(start_tag)):end_index]
-                contained_text.append(text_grabbed)
+                contained_text.append(text_grabbed.strip().replace('    ', '').replace('\n', ''))
                 remaining_text = remaining_text[(end_index + len(end_tag)):]
         else:
             remaining_text = remaining_text[(potential_start_index + len(start_tag)):]
@@ -100,6 +102,7 @@ def html_searcher(text, tags, destructive=True):
     else:
         return contained_text, text
 
+
 def html_wrapper(text, blocks_to_find, nicknames={}):
     """
     >>> html_wrapper('<a class="b">abcde</a>', {'a': ['b']})
@@ -107,7 +110,6 @@ def html_wrapper(text, blocks_to_find, nicknames={}):
     >>> html_wrapper('<a class="b">abcde</a>', {'a': ['b']}, {'a': 'body'})
     {'body': ['abcde']}
     """
-    #each entry in blocks to find is a dictionary key: value pair with key being the header and value being a list of class specifiers
     output_dict = {}
     for key in blocks_to_find:
         if key[-1] in '0123456789':
@@ -120,6 +122,7 @@ def html_wrapper(text, blocks_to_find, nicknames={}):
         else:
             output_dict[key] = output
     return output_dict
+
 
 if __name__ == "__main__":
     import doctest
