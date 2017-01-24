@@ -113,7 +113,7 @@ def html_wrapper(text, blocks_to_find, nicknames={}):
     output_dict = {}
     for key in blocks_to_find:
         """ Length > 2 necessary to not mess up header tags (h1, h2, etc.). """
-        if (key[-1] in '0123456789' and len(key) > 2):
+        if (key[-1] in '0123456789' and key[0] != 'h'):
             cur_tags = [key[:-1]] + blocks_to_find[key]
         else:
             cur_tags = [key] + blocks_to_find[key]

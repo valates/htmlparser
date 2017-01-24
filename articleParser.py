@@ -6,56 +6,55 @@ from textSearcher import html_wrapper
 
 def main(args):
     """
-    potential qualssites
+    potential quals sites
     huff post
     nyt (see op eds)
     dailykos
     heritage
     cato
+    nationalreview
 
-
+    need support for nested tags- doesnt cut off till sure its lined up- so one div within a first div doesnt fuck it up
     NEED TO FIGURE OUT AUTHOR ISSUE FOR DAILY KOS- for now just marking as dailykos as source
 
     fox suddenly not working?
 
-    doesnt seem to likeh1 tag for some reason...
     Need to deal with The Hill's text bug...
     'https://thinkprogress.org/trump-reinstates-abortion-restriction-f911f16c758e#.mamg65lyd' ==> binary mode shit
     """
 
     """
-
-
-
     reuters
     PR newswire
     la times
     TIME
     Yahoo News
     Seeking alpha
-
-
-    salon
     abc
-    usa today
-    National Review
-    WSJ
-    CNBC
-    the independent
 
-    ars technica
-    gizmodo? I hope not...
+
+
+    the independent
 
     blacklist:
     breitbart
+    rolling stone
     powerlineblog.com
+    WSJ (just give paywall explanation in message)
     """
 
-    urls = ['http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708&cid=clicksource_4380645_1_hero_headlines_bsq_hed']
+    urls = ['']
     """['http://www.foxnews.com/politics/2017/01/23/trumps-cabinet-picks-face-questions-from-both-parties-mcconnell-confident.html',
             'https://apnews.com/b8446cbf5b504b1abaf49eb0d646367b/US-sent-$221-million-to-Palestinians-in-Obamas-last-hours',
+            'http://www.dailywire.com/news/12703/president-trump-names-january-20-2017-national-frank-camp',
+            'http://www.vox.com/technology/2017/1/23/14341506/ajit-pai-fcc-chair',
+            'http://www.nationalreview.com/article/444140/trump-economy-prosperity-will-silence-his-opponents',
+            'http://www.usatoday.com/story/tech/news/2017/01/23/best-best-us-jobs-tech-tech-tech/96723738/', 
+            'http://www.cnbc.com/2017/01/23/in-stagnant-market-traders-watching-these-reports-for-clues.html',
+            'http://www.salon.com/2017/01/24/trumps-war-on-medicaid-our-new-president-wants-to-gut-a-critical-program-for-the-poor/',
             'http://www.npr.org/sections/thetwo-way/2017/01/23/511273522/trump-files-documents-to-shift-management-of-businesses-to-his-sons',
             'https://www.cato.org/publications/policy-analysis/curse-or-blessing-how-institutions-determine-success-resource-rich',
+            'http://www.marketwatch.com/story/the-dows-biggest-surge-came-under-this-president-2017-01-23?mod=cx_picks&cx_navSource=cx_picks&cx_tag=other&cx_artPos=7#cxrecs_s',
             'http://www.nbcnews.com/politics/white-house/president-trump-resigns-businesses-leaves-sons-cfo-charge-n711156?cid=par-nbc_20170124']
             'https://www.yahoo.com/news/kellyanne-conway-cites-alternative-facts-in-tense-interview-with-chuck-todd-over-false-crowd-size-claims-171242433.html',
             'https://www.bloomberg.com/news/articles/2017-01-23/beware-the-hedge-fund-wipeout-in-treasuries-as-bearish-bets-soar',
@@ -224,10 +223,61 @@ def main(args):
         if ('abcnews.com' in url):
             tags = {'title': [], 'div': ['author has-bio'], 'span': ['timestamp'], 'p': ['articleBody']}
             nicknames = {'title': 'title', 'span': 'date', 'div': 'authors', 'p': 'body'}
+            """ wtf title error here 'http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708'""" 
+        if ('wsj.com' in url):
+            if ('To Read the Full Story,' in article_html_text):
+                print('Article behind paywall for ' + url + ' . Skipping article. ')
+                print("MUST DEBUG CONSISTENTLY")
+                continue
+            """ might be a lost cause""" 
+            tags = {'title': [], 'span': ['name'], 'time': [], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'authors', 'time': 'date', 'p': 'body'}
+        if ('marketwatch.com' in url):
+            tags = {'title': [], 'div': ['first-author-has-dred'], 'p': ['timestamp'], 'p2': ['VANILLA']}
+            nicknames = {'title': 'title', 'div': 'authors', 'p': 'date', 'p2': 'body'}
+        if ('salon.com' in url):
+            tags = {'title': [], 'span': ['byline'], 'span2': ['toLocalTime'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'authors', 'span2': 'date', 'p': 'body'}
+        if ('cnbc.com' in url):
+            tags = {'title': [], 'div': ['source'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'div': 'authors', 'p': 'body'}
+
+            publish_date = url[url.find('telegraph.co') + len('telegraph.co'):]
+            date_tokens = publish_date.split('/')
+            year = date_tokens[1]
+            month = date_tokens[2]
+            day = date_tokens[3]
+            d_cache = month + '-' + day + '-' + year
+            date_cached = True
+        if ('usatoday.com' in url):
+            tags = {'title': [], 'span': ['asset-metabar-author asset-metabar-item'], 'span2': ['asset-metabar-time asset-metabar-item nobyline'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'authors', 'span2': 'date', 'p': 'body'}
+            #todo- remove , USA Today from end of autor
+        if ('nationalreview.com' in url):
+            tags = {'title': [], 'time': [], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'time': 'date', 'p': 'body'}
+            author_cached = True
+            #need to fix nested divs to get authors
+        if ('vox.com' in url):
+            tags = {'title': [], 'span': ['c-byline__item'], 'p':[]}
+            nicknames = {'title': 'title', 'span': 'authors', 'p': 'body'}
+
+            publish_date = url[url.find('vox.com') + len('vox.com'):]
+            date_tokens = publish_date.split('/')
+            year = date_tokens[2]
+            month = date_tokens[3]
+            day = date_tokens[4]
+            d_cache = month + '-' + day + '-' + year
+            date_cached = True
+        if ('dailywire.com' in url):
+            """ REMOVE LINE BELOW THIS- PLACEHOLDER TILL DIV FIXED. """
+            article_html_text = article_html_text.replace('By:</div>', '')
+            tags = {'title': [], 'div': ['field-label'], 'div2': ['field-published-on'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'div': 'authors', 'div2': 'date', 'p': 'body'}
+
 
         for key in nicknames:
             reverse_nicknames[nicknames[key]] = key
-
         output_text = html_wrapper(article_html_text, tags, nicknames)
 
         if (title_cached is False and output_text['title'] != []):
@@ -262,6 +312,7 @@ def main(args):
             nicknames.pop(extra_key)
             extra_cached = True
 
+
         """ Ensure it doesn't do that stupid bug where randomly shit
         isn't returned in request text. """
         while (title_cached is False or
@@ -269,7 +320,6 @@ def main(args):
                author_cached is False or
                body_cached is False or
                extra_cached is False):
-            print(date_cached)
             output_text = html_wrapper(article_html_text, tags, nicknames)
             if (title_cached is False and output_text['title'] != []):
                 t_cache = output_text['title']
@@ -403,8 +453,80 @@ def main(args):
             b_cache = [para for para in b_cache if "FILE" not in para]
         if ('abcnews.com' in url):
             t_cache[0] = t_cache[0].replace(' - ABC News', '')
+        if ('marketwatch.com' in url):
+            author = a_cache[0].split('<b>')
+            author[1] = author[1][:author[1].find('</b>')]
+            author[0] = author[0].replace('By', '')
+            author[0] = remove_brackets(author[0]).replace('\r', '')
+            a_cache = [author[0] + ' ' + author[1]]
+            t_cache[0] = t_cache[0].replace(' - MarketWatch', '')
+            b_cache.pop(0)
+            b_cache.pop(0)
+            b_cache.pop(-1)
+            b_cache.pop(-1)
+            b_cache.pop(-1)
+            b_cache = [para for para in b_cache if 'This story was first published on 'not in para and
+                                                    len(para) > 16]
+            d_cache = remove_brackets(d_cache)
+            d_cache = d_cache.replace('Published: ', '')
+            d_cache = d_cache[:d_cache.find(':') - 2]
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
+        if ('cnbc.com' in url):
+            for i in range(7):
+                b_cache.pop(-1)
+            a_cache[0] = a_cache[0][:a_cache[0].find('</a>')]
 
-        if ('npr.org' in url):
+            """ Need to removeblank lines in text... due to using '\r' in the text"""
+            """ has artifcating of Â """
+        if ('salon.com' in url):
+            a_cache = [a_cache[-1]]
+            t_cache[0] = t_cache[0].replace(' - Salon.com', '')
+            d_cache = d_cache[(d_cache.find(',') + 2):]
+            d_cache = d_cache[:(d_cache.find(':') - 2)].strip()
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+        if ('usatoday.com' in url):
+            d_cache = d_cache[d_cache.find("ET") + 3:d_cache.find('|')].strip()
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace('.', '')
+            d_cache = d_cache.replace(' ', '-')
+            b_cache = [para for para in b_cache if 'USA TODAY NETWORK' not in para and
+                                                   'Check out a new episode' not in para and
+                                                   'Follow USA TODAY' not in para and
+                                                   para != "We're sorry." and
+                                                   para != "something went wrong."]
+            a_cache[0] = a_cache[0][:a_cache[0].find('</a>')]
+        if ('vox.com' in url):
+            t_cache[0] = t_cache[0].replace(' - Vox', '')
+            a_cache = [remove_brackets(a_cache[0][:a_cache[0].find('</a>')])]
+            split_index = b_cache.index('Awesome, share it:')
+            b_cache = b_cache[:split_index]
+            b_cache[0] = b_cache[0][(b_cache[0].find('</figure>')):]
+        if ('dailywire.com' in url):
+            t_cache[0] = t_cache[0].replace(' | Daily Wire', '')
+            b_cache.pop(0)
+            for i in range(2):
+                b_cache.pop(-1)
+            a_cache = [a_cache[0]]
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
+
+
+        if ('nationalreview.com' in url):
+            t_cache[0] = t_cache[0].replace('  | National Review', '')
+            a_cache = ['National Review']
+            d_cache = remove_brackets(d_cache)
+            d_cache = d_cache[:d_cache.find(':') - 2].strip()
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
+            cite = a_cache[0] + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
+            #change to actual author when bug fixed
+            #sometimes has quals, need to handle
+        elif ('npr.org' in url):
             """ TO DO CHANGE ONCE FIGURE OUT AUTHOR APPROACH """
             t_cache[0] = (t_cache[0])[:t_cache[0].find(':')]
             d_cache = d_cache.replace(",", "")
@@ -479,8 +601,8 @@ def main(args):
         body = b_cache
         text = ''
         for para in body:
-            para = remove_brackets(para)
-            if (para != ''):
+            para = remove_brackets(para).strip()
+            if ((para != '') and (para.replace(' ', '') != '')):
                 text += (para + '\n')
 
         """ Card is cite + body. """
@@ -538,8 +660,10 @@ def remove_common_artifacts(text):
     text = text.replace('”', '"')
     text = text.replace("’", "'")
     text = text.replace('&#8212;', '-')
+    text = text.replace('—', '-')
     return text
 
+#need a way to get rid of Â character. appears for seemingly no reason at times. 
 
 def remove_brackets(text):
     len_text = len(text)
