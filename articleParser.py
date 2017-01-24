@@ -5,71 +5,79 @@ from textSearcher import html_wrapper
 
 
 def main(args):
-    #doesnt seem to likeh1 tag for some reason...
-
-
     """
     potential qualssites
     huff post
     nyt (see op eds)
     dailykos
     heritage
+    cato
 
 
     NEED TO FIGURE OUT AUTHOR ISSUE FOR DAILY KOS- for now just marking as dailykos as source
+
+    fox suddenly not working?
+
+    doesnt seem to likeh1 tag for some reason...
+    Need to deal with The Hill's text bug...
+    'https://thinkprogress.org/trump-reinstates-abortion-restriction-f911f16c758e#.mamg65lyd' ==> binary mode shit
     """
 
     """
+
+
+
     reuters
-    AP
-    The Telegraph
-    Thinkprogress
-    salon
-    nbc
-    abc
-    cbs
     PR newswire
-    RT
     la times
-    usa today
     TIME
     Yahoo News
-    NPR
+    Seeking alpha
+
+
+    salon
+    abc
+    usa today
     National Review
-    CATO
     WSJ
     CNBC
-    Seeking alpha
     the independent
+
+    ars technica
+    gizmodo? I hope not...
 
     blacklist:
     breitbart
     powerlineblog.com
-
-    thinkprogress?
     """
 
-    urls = ['']
+    urls = ['http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708&cid=clicksource_4380645_1_hero_headlines_bsq_hed']
     """['http://www.foxnews.com/politics/2017/01/23/trumps-cabinet-picks-face-questions-from-both-parties-mcconnell-confident.html',
-    'https://www.yahoo.com/news/kellyanne-conway-cites-alternative-facts-in-tense-interview-with-chuck-todd-over-false-crowd-size-claims-171242433.html',
+            'https://apnews.com/b8446cbf5b504b1abaf49eb0d646367b/US-sent-$221-million-to-Palestinians-in-Obamas-last-hours',
+            'http://www.npr.org/sections/thetwo-way/2017/01/23/511273522/trump-files-documents-to-shift-management-of-businesses-to-his-sons',
+            'https://www.cato.org/publications/policy-analysis/curse-or-blessing-how-institutions-determine-success-resource-rich',
+            'http://www.nbcnews.com/politics/white-house/president-trump-resigns-businesses-leaves-sons-cfo-charge-n711156?cid=par-nbc_20170124']
+            'https://www.yahoo.com/news/kellyanne-conway-cites-alternative-facts-in-tense-interview-with-chuck-todd-over-false-crowd-size-claims-171242433.html',
             'https://www.bloomberg.com/news/articles/2017-01-23/beware-the-hedge-fund-wipeout-in-treasuries-as-bearish-bets-soar',
             'http://www.huffingtonpost.com/entry/many-white-women-marched-now-what_us_5884d0dae4b0d96b98c1dd27?section=us_politics',
-            'http://thehill.com/policy/healthcare/315387-what-we-know-and-dont-know-about-trumps-healthcare-plans'
             'http://thehill.com/policy/healthcare/315387-what-we-know-and-dont-know-about-trumps-healthcare-plans',
             'https://www.nytimes.com/2017/01/19/us/trump-cabinet-picks-inauguration.html',
             'http://www.thedailybeast.com/articles/2017/01/23/trump-s-health-czar-tom-price-was-a-pal-to-big-pharma.html',
             'http://www.dailykos.com/stories/2017/1/22/1622039/-Kentucky-passes-bill-telling-unions-how-to-spend-voluntary-dues-and-House-Speaker-can-t-explain-why',
             'http://www.politico.com/story/2017/01/alternative-facts-kellyanne-conway-233998',
             'http://news.xinhuanet.com/english/2017-01/22/c_136004898.htm',
+            'http://www.telegraph.co.uk/news/2017/01/23/donald-trump-lines-executive-actions-meetings-ahead-first-press/',
+            'http://www.cbsnews.com/news/georgia-south-carolina-mississippi-devastated-strong-deadly-storms-tornadoes/',
             'https://www.theguardian.com/us-news/2017/jan/22/white-house-refuses-release-trump-tax-returns-wikileaks',
+            'https://www.rt.com/news/374837-russia-us-joint-airstrikes-syria/',
             'http://www.heritage.org/research/commentary/2016/11/demint-election-oped']"""
 
     for url in urls:
 
         article_html_text = url_to_text(url)
 
-        title_cached, date_cached, author_cached, body_cached = False, False, False, False
-        t_cache, d_cache, a_cache, b_cache = [], [], [], []
+        title_cached, date_cached, author_cached, body_cached, extra_cached = False, False, False, False, True
+        t_cache, d_cache, a_cache, b_cache, e_cache = [], [], [], [], []
         tags, nicknames = {}, {}
         reverse_nicknames = {}
 
@@ -104,19 +112,22 @@ def main(args):
             day = date_tokens[4]
             d_cache = month + '-' + day + '-' + year
             date_cached = True
-        if ('time.com' in url): #to investigate...
+        if ('time.com' in url):
+            """ to investigate... """
             tags = {'h1': [], 'ul': ['article-authors'], 'time': ['publish-date'], 'article': []}
             nicknames = {'h1': 'title', 'ul': 'authors', 'time': 'date', 'article': 'body'}
         if ('thehill.com' in url):
             tags = {'title': [], 'span': ['submitted-by'], 'span2': ['submitted-date'], 'p': []}
             nicknames = {'title': 'title', 'span': 'authors', 'span2': 'date', 'p': 'body'}
         if ('huffingtonpost.com' in url):
-            tags = {'title': [], 'span': ['author-card__details__name'], 'span2': ['timestamp__date--published'], 'p': []}
+            tags = {'title': [], 'span': ['author-card__details__name'],
+                    'span2': ['timestamp__date--published'], 'p': []}
             nicknames = {'title': 'title', 'span': 'authors', 'span2': 'date', 'p': 'body'}
         if ('bloomberg.com' in url):
             tags = {'title': [], 'div': ['author'], 'time': [], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'div': 'authors', 'time': 'date', 'p': 'body'}
-        if ('yahoo.com/news' in url): #to work on
+        if ('yahoo.com/news' in url):
+            """ to work on """
             tags = {'title': [], 'time': [], 'div': ['author Mb(4px) Mend(4px) D(ib)'], 'p': []}
             nicknames = {'title': 'title', 'time': 'date', 'div': 'authors', 'p': 'body'}
         if ('dailykos.com' in url):
@@ -172,11 +183,47 @@ def main(args):
         if ('latimes.com'in url):
             tags = {'title': []}
             nicknames = {'title': 'title'}
+        if ('cbsnews.com' in url):
+            tags = {'title': [], 'span': ['time'], 'span2': ['source'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'date', 'span2': 'authors', 'p': 'body'}
+        if ('rt.com' in url):
+            tags = {'title': [], 'time': ['date'], 'p': ['VANILLA'], 'div': ['article__summary summary ']}
+            nicknames = {'title': 'title', 'time': 'date', 'p': 'body', 'div': 'extra'}
+            extra_cached = False
+            a_cache = ['RT']
+            author_cached = True
+        if ('telegraph.co' in url):
+            tags = {'title': [], 'span': ['byline__author-name'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'authors', 'p': 'body'}
 
-
-
-
-
+            publish_date = url[url.find('telegraph.co') + len('telegraph.co'):]
+            date_tokens = publish_date.split('/')
+            year = date_tokens[2]
+            month = date_tokens[3]
+            day = date_tokens[4]
+            d_cache = month + '-' + day + '-' + year
+            date_cached = True
+        if ('thinkprogress.org' in url):
+            tags = {'title': [], 'a': ['link link link--darken link--darker u-baseColor--link'], 'time': [], 'p': []}
+            nicknames = {'title': 'title', 'a': 'authors', 'time': 'date', 'p': 'body'}
+        if ('nbcnews.com' in url):
+            tags = {'title': [], 'span': ['byline_author'], 'time': [], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'authors', 'time': 'date', 'p': 'body'}
+        if ('npr.org' in url):
+            tags = {'title': [], 'span': ['date'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'date', 'p': 'body'}
+            """ need to add function to get author """
+            author_cached = True
+            a_cache = ['NPR']
+        if ('cato.org' in url):
+            tags = {'title': [], 'footer': ['byline'], 'span': ['date-display-single'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'footer': 'authors', 'span': 'date', 'p': 'body'}
+        if ('apnews.com' in url):
+            tags = {'title': [], 'h4': ['updatedString'], 'h42': ['VANILLA'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'h4': 'date', 'h42': 'authors', 'p': 'body'}
+        if ('abcnews.com' in url):
+            tags = {'title': [], 'div': ['author has-bio'], 'span': ['timestamp'], 'p': ['articleBody']}
+            nicknames = {'title': 'title', 'span': 'date', 'div': 'authors', 'p': 'body'}
 
         for key in nicknames:
             reverse_nicknames[nicknames[key]] = key
@@ -201,15 +248,28 @@ def main(args):
             tags.pop(author_key)
             nicknames.pop(author_key)
             author_cached = True
-        if (body_cached is False and len(output_text['body']) > 5): #This number is arbitrary- purely done to stop The HIll from doing weird shit
+        if (body_cached is False and len(output_text['body']) > 3):
+            """ This number is arbitrary- purely done to stop The HIll from doing weird shit """
             b_cache = output_text['body']
             body_key = reverse_nicknames['body']
             tags.pop(body_key)
             nicknames.pop(body_key)
             body_cached = True
+        if (extra_cached is False and output_text['extra'] != []):
+            e_cache = output_text['extra']
+            extra_key = reverse_nicknames['extra']
+            tags.pop(extra_key)
+            nicknames.pop(extra_key)
+            extra_cached = True
 
-        """ Ensure it doesn't do that stupid bug where randomly shit isn't returned in request text. """
-        while (title_cached is False or date_cached is False or author_cached is False or body_cached is False):
+        """ Ensure it doesn't do that stupid bug where randomly shit
+        isn't returned in request text. """
+        while (title_cached is False or
+               date_cached is False or
+               author_cached is False or
+               body_cached is False or
+               extra_cached is False):
+            print(date_cached)
             output_text = html_wrapper(article_html_text, tags, nicknames)
             if (title_cached is False and output_text['title'] != []):
                 t_cache = output_text['title']
@@ -229,12 +289,18 @@ def main(args):
                 tags.pop(author_key)
                 nicknames.pop(author_key)
                 author_cached = True
-            if (body_cached is False and len(output_text['body']) > 5):
+            if (body_cached is False and len(output_text['body']) > 3):
                 b_cache = output_text['body']
                 body_key = reverse_nicknames['body']
                 tags.pop(body_key)
                 nicknames.pop(body_key)
                 body_cached = True
+            if (extra_cached is False and output_text['extra'] != []):
+                e_cache = output_text['extra']
+                extra_key = reverse_nicknames['extra']
+                tags.pop(extra_key)
+                nicknames.pop(extra_key)
+                extra_cached = True
 
         """ ugh, need to organize handlers- here we handle any weird cases
         of titles or authors containing stupid text on the end """
@@ -250,11 +316,11 @@ def main(args):
                 """ If TIME gives date published in their html as a specific time, it was published today. """
                 d_cache = time.strftime("%m-%d-%Y")
             a_cache = [author.replace(' / AP', '') for author in a_cache]
-        if ('thehill.com' in url): #b_cache is stupidly finnicky- MIGHT BE RELATED TO TOO MANY SIMULTANEOUS REQUESTS
-            b_cache = [para for para in b_cache if "discussion thread." not in para 
-                                                                    and "The Hill" not in para 
-                                                                    and "The contents of this site" not in para
-                                                                    and "SPONSORED" not in para]
+        if ('thehill.com' in url):
+            b_cache = [para for para in b_cache if "discussion thread." not in para and
+                                                   "The Hill" not in para and
+                                                   "The contents of this site" not in para and
+                                                   "SPONSORED" not in para]
             author = a_cache[0].replace('By ', '')
             author = author[:author.find(' - ')]
             a_cache[0] = author
@@ -280,17 +346,18 @@ def main(args):
             a_cache = a_cache[3:]
             a_cache = a_cache.split('and')
             a_cache = [author.strip() for author in a_cache]
-        if ('heritage.org' in url): #TODO NEED TO FIX PARAGRAPH SHIT ARGH
+        if ('heritage.org' in url):
+            """ NEED TO FIX PARAGRAPH SHIT"""
             a_cache = [author.replace('By ', '') for author in a_cache]
             d_cache = d_cache[:d_cache.find(' |')]
             d_cache = d_cache.replace(',', '')
             d_cache = d_cache.replace(' ', '-')
             d_cache = d_cache.replace('</p', '')
             d_cache = d_cache.replace('<p>', '')
-            b_cache = [para for para in b_cache if 'The Heritage Foundation' not in para 
-                                                    and '|' not in para 
-                                                    and 'Contact Us' not in para 
-                                                    and 'Privacy Policy' not in para]
+            b_cache = [para for para in b_cache if 'The Heritage Foundation' not in para and
+                                                   '|' not in para and
+                                                   'Contact Us' not in para and
+                                                   'Privacy Policy' not in para]
         if ('theguardian.com' in url):
             t_cache[0] = (t_cache[0])[:t_cache[0].find('|')]
             b_cache2 = []
@@ -301,9 +368,65 @@ def main(args):
             b_cache = b_cache2
         if ('latimes.com'in url):
             t_cache[0] = t_cache[0].replace(' - LA Times', '')
+        if ('telegraph.co' in url):
+            b_cache = [para for para in b_cache if 'your internet connection' not in para and
+                                                   'Telegraph Media Group Limited' not in para and
+                                                   'we rely on revenue generated by advertising' not in para and
+                                                   'Just a couple of clicks will make a big difference' not in para and
+                                                   para != 'Thank you.' and
+                                                   'for instructions' not in para]
+        if ('thinkprogress.org' in url):
+            b_cache = [para for para in b_cache if 'Moving news forward.' not in para and
+                                                   'Contact me:' not in para]
+            """ NEED MEANS TO DEAL WITH THEIR STUPID ARTIFICATS IN THE TEXT. """
+            """ NEED TO HAVE HANDLER FOR X HOURS AGO AND Y DAYS AGO. """
+        if ('nbcnews.com' in url):
+            d_cache = d_cache[:d_cache.find(',')]
+            d_cache = d_cache.replace(' ', '-')
+        if ('cato.org' in url):
+            """ finding the end is annoying it seems- need further testing of extractor. """
+            t_cache[0] = t_cache[0].replace(' | Cato Institute', '')
+            a_cache[0] = a_cache[0].replace('By ', '')
+            a_cache[0] = a_cache[0][:a_cache[0].find('</div>')]
+            a_cache = a_cache[0].split('and')
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
+            b_cache = [para for para in b_cache if 'Unported License' not in para]
+            quals = b_cache.pop(-1)
+        if ('apnews.com' in url):
+            a_cache[0] = a_cache[0].replace('By', '')
+            a_cache = a_cache[0].split('and')
+            """ Need mechanism for articles published close to midnight... add handler later"""
+            if (('minutes ago' in d_cache) or ('hours ago' in d_cache) or ('Today' in d_cache)):
+                d_cache = time.strftime("%m-%d-%Y")
+            b_cache = [para for para in b_cache if "FILE" not in para]
+        if ('abcnews.com' in url):
+            t_cache[0] = t_cache[0].replace(' - ABC News', '')
 
-
-        if ('xinhuanet.com' in url):
+        if ('npr.org' in url):
+            """ TO DO CHANGE ONCE FIGURE OUT AUTHOR APPROACH """
+            t_cache[0] = (t_cache[0])[:t_cache[0].find(':')]
+            d_cache = d_cache.replace(",", "")
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
+            b_cache = [para for para in b_cache if 'Get in touch with your questions, comments and leads.' not in para]
+            cite = a_cache[0] + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
+        elif ('rt.com' in url):
+            t_cache[0] = t_cache[0].replace(' — RT News', '')
+            b_cache.insert(0, e_cache[0])
+            d_cache = d_cache[d_cache.find("GMT,") + 5:]
+            d_cache = d_cache.replace(",", "")
+            d_cache = d_cache.replace(" ", "-")
+            cite = a_cache[0] + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
+        elif ('cbsnews.com' in url):
+            t_cache[0] = t_cache[0].replace(' - CBS News', '')
+            d_cache = d_cache[:d_cache.find(',') + 6]
+            d_cache = d_cache.replace(",", "")
+            d_cache = d_cache.replace(" ", "-")
+            d_cache = month_name_to_number(d_cache)
+            cite = a_cache[0] + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
+        elif ('xinhuanet.com' in url):
             b_cache2 = []
             b_cache.pop(1)
             for para in b_cache:
@@ -314,10 +437,10 @@ def main(args):
             a_cache = 'Xinhua'
             cite = a_cache + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
         elif ('dailykos.com' in url):
-            b_cache = [para for para in b_cache if 'Kos Media, LLC.' not in para 
-                                                    and 'is the author of' not in para 
-                                                    and 'Return to edit' not in para]
-            a_cache = 'Daily Kos' 
+            b_cache = [para for para in b_cache if 'Kos Media, LLC.' not in para and
+                                                   'is the author of' not in para and
+                                                   'Return to edit' not in para]
+            a_cache = 'Daily Kos'
             """ TODO REMOVE WHEN FIXED """
             cite = a_cache + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
         elif ('foxnews.com' in url):
@@ -331,16 +454,26 @@ def main(args):
             authors_first = ''
             for author in a_cache:
                 author_tokens = author.split()
-                if (authors_last != ''):
-                    authors_last += ' and '
-                    authors_first += ' and '
-                authors_first += author_tokens[0].lower().capitalize()
-                authors_last += author_tokens[-1].lower().capitalize()
-
+                author_tokens = [author.replace(",", "") for author in author_tokens]
+                if ((authors_last != '') and (a_cache.index(author) == (len(a_cache) - 1))):
+                    if (len(a_cache) == 2):
+                        authors_last += ' '
+                        authors_first += ' '
+                    authors_last += 'and '
+                    authors_first += 'and '
+                    authors_first += author_tokens[0].lower().capitalize()
+                    authors_last += author_tokens[-1].lower().capitalize()
+                else:
+                    authors_first += author_tokens[0].lower().capitalize()
+                    authors_last += author_tokens[-1].lower().capitalize()
+                    if (len(a_cache) > 2):
+                        authors_last += ', '
+                        authors_first += ', '
+            """ Need handler for hyphenated names- make capital afterwards """
             d_cache = month_name_to_number(d_cache)
 
             """ Create cite. """
-            cite = authors_last + ', ' + d_cache + ', ' + authors_first + ', "' + t_cache[0].strip() + '," ' + url
+            cite = authors_last.strip() + ', ' + d_cache + ', ' + authors_first.strip() + ', "' + t_cache[0].strip() + '," ' + url
 
         """ Create body. """
         body = b_cache
@@ -357,12 +490,13 @@ def main(args):
         html code for quotation marks instead of just using quotes in the html). """
         card = remove_common_artifacts(card)
 
-        f = open('card output', 'a')
+        f = open('card output', 'ab')
 
         """ Write card to output file."""
-        f.write(card)
+        f.write(card.encode('utf-8'))
 
         f.close()
+
 
 def month_name_to_number(date):
     proper_names = {"January": 1,
@@ -397,6 +531,13 @@ def remove_common_artifacts(text):
     text = text.replace('&#x201C;', '"')
     text = text.replace('&#x201D;', '"')
     text = text.replace('Â', '')
+    text = text.replace("&rsquo;", "'")
+    text = text.replace('&rdquo;', '"')
+    text = text.replace('&ldquo;', '"')
+    text = text.replace('“', '"')
+    text = text.replace('”', '"')
+    text = text.replace("’", "'")
+    text = text.replace('&#8212;', '-')
     return text
 
 
