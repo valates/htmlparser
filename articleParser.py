@@ -27,7 +27,6 @@ def main(args):
     PR newswire
     TIME
     Yahoo News
-    Seeking alpha
     abc
 
 
@@ -39,15 +38,16 @@ def main(args):
     WSJ (just give paywall explanation in message)
     """
 
-    urls = ['http://www.latimes.com/politics/la-na-pol-trump-analysis-20170123-story.html']
+    urls = ['http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708']
     """['http://www.foxnews.com/politics/2017/01/23/trumps-cabinet-picks-face-questions-from-both-parties-mcconnell-confident.html',
             'https://apnews.com/b8446cbf5b504b1abaf49eb0d646367b/US-sent-$221-million-to-Palestinians-in-Obamas-last-hours',
-            'http://www.reuters.com/article/us-china-mongolia-dalailama-idUSKBN158197?il=0', 
+            'http://www.reuters.com/article/us-china-mongolia-dalailama-idUSKBN158197?il=0',
+            'http://www.latimes.com/politics/la-na-pol-trump-analysis-20170123-story.html',
             'http://www.independent.co.uk/voices/catholic-global-gag-rule-donald-trump-risks-womens-lives-foreign-aid-abortion-a7542601.html',
             'http://www.dailywire.com/news/12703/president-trump-names-january-20-2017-national-frank-camp',
             'http://www.vox.com/technology/2017/1/23/14341506/ajit-pai-fcc-chair',
             'http://www.nationalreview.com/article/444140/trump-economy-prosperity-will-silence-his-opponents',
-            'http://www.usatoday.com/story/tech/news/2017/01/23/best-best-us-jobs-tech-tech-tech/96723738/', 
+            'http://www.usatoday.com/story/tech/news/2017/01/23/best-best-us-jobs-tech-tech-tech/96723738/',
             'http://www.cnbc.com/2017/01/23/in-stagnant-market-traders-watching-these-reports-for-clues.html',
             'http://www.salon.com/2017/01/24/trumps-war-on-medicaid-our-new-president-wants-to-gut-a-critical-program-for-the-poor/',
             'http://www.npr.org/sections/thetwo-way/2017/01/23/511273522/trump-files-documents-to-shift-management-of-businesses-to-his-sons',
@@ -183,7 +183,7 @@ def main(args):
             """ Cheap way around problem. """
             article_html_text = article_html_text[:article_html_text.find('<div class="trb_filmstrip_related_panel"')]
 
-            d_cache = 'placeholder'
+            d_cache = article_html_text[article_html_text.find('<time'):article_html_text.find('</time>')]
             date_cached = True
         if ('cbsnews.com' in url):
             tags = {'title': [], 'span': ['time'], 'span2': ['source'], 'p': ['VANILLA']}
@@ -223,16 +223,21 @@ def main(args):
         if ('apnews.com' in url):
             tags = {'title': [], 'h4': ['updatedString'], 'h42': ['VANILLA'], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'h4': 'date', 'h42': 'authors', 'p': 'body'}
-        if ('abcnews.com' in url):
-            tags = {'title': [], 'div': ['author has-bio'], 'span': ['timestamp'], 'p': ['articleBody']}
-            nicknames = {'title': 'title', 'span': 'date', 'div': 'authors', 'p': 'body'}
-            """ wtf title error here 'http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708'""" 
+        if ('abcnews.go.com' in url):
+            tags = {'title': [], 'p': []}
+            nicknames = {'title': 'title', 'p': 'body'}
+            a_cache = ['placeholder text']
+            d_cache = 'placeholder'
+            author_cached = True
+            date_cached = True
+            """ wtf title error here
+            'http://abcnews.go.com/Politics/president-trumps-promises-point-busy-day-monday/story?id=44972708'"""
         if ('wsj.com' in url):
             if ('To Read the Full Story,' in article_html_text):
                 print('Article behind paywall for ' + url + ' . Skipping article. ')
                 print("MUST DEBUG CONSISTENTLY")
                 continue
-            """ might be a lost cause""" 
+            """ Might be a lost cause """ 
             tags = {'title': [], 'span': ['name'], 'time': [], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'span': 'authors', 'time': 'date', 'p': 'body'}
         if ('marketwatch.com' in url):
@@ -253,14 +258,15 @@ def main(args):
             d_cache = month + '-' + day + '-' + year
             date_cached = True
         if ('usatoday.com' in url):
-            tags = {'title': [], 'span': ['asset-metabar-author asset-metabar-item'], 'span2': ['asset-metabar-time asset-metabar-item nobyline'], 'p': ['VANILLA']}
+            tags = {'title': [], 'span': ['asset-metabar-author asset-metabar-item'],
+                    'span2': ['asset-metabar-time asset-metabar-item nobyline'], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'span': 'authors', 'span2': 'date', 'p': 'body'}
-            #todo- remove , USA Today from end of autor
+            """ todo- remove , USA Today from end of autor """
         if ('nationalreview.com' in url):
             tags = {'title': [], 'time': [], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'time': 'date', 'p': 'body'}
             author_cached = True
-            #need to fix nested divs to get authors
+            """ need to fix nested divs to get authors """
         if ('vox.com' in url):
             tags = {'title': [], 'span': ['c-byline__item'], 'p':[]}
             nicknames = {'title': 'title', 'span': 'authors', 'p': 'body'}
@@ -286,6 +292,9 @@ def main(args):
             nicknames = {'title': 'title', 'span': 'date', 'p': 'body'}
             a_cache = ['Reuters']
             author_cached = True
+        #if ('time.com' in url):
+        #    tags = {'title': [], 'span': ['zhtAwgU0'], 'p': []}
+        #    nicknames = {'title': 'title', 'span': 'authors', 'p': 'body'}
 
 
         for key in nicknames:
@@ -431,7 +440,11 @@ def main(args):
         if ('latimes.com'in url):
             t_cache[0] = t_cache[0].replace(' - LA Times', '')
             a_cache[0] = a_cache[0][:a_cache[0].find('</a>')]
-
+            d_cache = d_cache[(d_cache.find('data-dt="') + len('data-dt="')):]
+            d_cache = d_cache[:(d_cache.find(',') + 6)]
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            d_cache = month_name_to_number(d_cache)
         if ('telegraph.co' in url):
             b_cache = [para for para in b_cache if 'your internet connection' not in para and
                                                    'Telegraph Media Group Limited' not in para and
@@ -693,7 +706,9 @@ def remove_common_artifacts(text):
     text = text.replace('—', '-')
     return text
 
-#need a way to get rid of Â character. appears for seemingly no reason at times. 
+
+""" need a way to get rid of Â character. appears for seemingly no reason at times. """
+
 
 def remove_brackets(text):
     len_text = len(text)
