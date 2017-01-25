@@ -24,17 +24,13 @@ def main(args):
     """
 
     """
-    reuters
     PR newswire
-    la times
     TIME
     Yahoo News
     Seeking alpha
     abc
 
 
-
-    the independent
 
     blacklist:
     breitbart
@@ -43,9 +39,11 @@ def main(args):
     WSJ (just give paywall explanation in message)
     """
 
-    urls = ['']
+    urls = ['http://www.latimes.com/politics/la-na-pol-trump-analysis-20170123-story.html']
     """['http://www.foxnews.com/politics/2017/01/23/trumps-cabinet-picks-face-questions-from-both-parties-mcconnell-confident.html',
             'https://apnews.com/b8446cbf5b504b1abaf49eb0d646367b/US-sent-$221-million-to-Palestinians-in-Obamas-last-hours',
+            'http://www.reuters.com/article/us-china-mongolia-dalailama-idUSKBN158197?il=0', 
+            'http://www.independent.co.uk/voices/catholic-global-gag-rule-donald-trump-risks-womens-lives-foreign-aid-abortion-a7542601.html',
             'http://www.dailywire.com/news/12703/president-trump-names-january-20-2017-national-frank-camp',
             'http://www.vox.com/technology/2017/1/23/14341506/ajit-pai-fcc-chair',
             'http://www.nationalreview.com/article/444140/trump-economy-prosperity-will-silence-his-opponents',
@@ -180,8 +178,13 @@ def main(args):
             d_cache = month + '-' + day + '-' + year
             date_cached = True
         if ('latimes.com'in url):
-            tags = {'title': []}
-            nicknames = {'title': 'title'}
+            tags = {'title': [], 'a': ['trb_ar_by_nm_au_a'], 'p': []}
+            nicknames = {'title': 'title', 'a': 'authors', 'p': 'body'}
+            """ Cheap way around problem. """
+            article_html_text = article_html_text[:article_html_text.find('<div class="trb_filmstrip_related_panel"')]
+
+            d_cache = 'placeholder'
+            date_cached = True
         if ('cbsnews.com' in url):
             tags = {'title': [], 'span': ['time'], 'span2': ['source'], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'span': 'date', 'span2': 'authors', 'p': 'body'}
@@ -274,6 +277,15 @@ def main(args):
             article_html_text = article_html_text.replace('By:</div>', '')
             tags = {'title': [], 'div': ['field-label'], 'div2': ['field-published-on'], 'p': ['VANILLA']}
             nicknames = {'title': 'title', 'div': 'authors', 'div2': 'date', 'p': 'body'}
+        if ('independent.co.uk' in url):
+            tags = {'title': [], 'li': ['author'], 'time': [], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'li': 'authors', 'time': 'date', 'p': 'body'}
+            article_html_text = article_html_text[:article_html_text.find('jQuery(document).ready(function(){')] + article_html_text[article_html_text.find('</div><!-- END'):]
+        if ('reuters.com' in url):
+            tags = {'title': [], 'span': ['timestamp'], 'p': ['VANILLA']}
+            nicknames = {'title': 'title', 'span': 'date', 'p': 'body'}
+            a_cache = ['Reuters']
+            author_cached = True
 
 
         for key in nicknames:
@@ -418,6 +430,8 @@ def main(args):
             b_cache = b_cache2
         if ('latimes.com'in url):
             t_cache[0] = t_cache[0].replace(' - LA Times', '')
+            a_cache[0] = a_cache[0][:a_cache[0].find('</a>')]
+
         if ('telegraph.co' in url):
             b_cache = [para for para in b_cache if 'your internet connection' not in para and
                                                    'Telegraph Media Group Limited' not in para and
@@ -513,9 +527,25 @@ def main(args):
             d_cache = d_cache.replace(',', '')
             d_cache = d_cache.replace(' ', '-')
             d_cache = month_name_to_number(d_cache)
+        if ('independent.co.uk' in url):
+            t_cache[0] = t_cache[0].replace(' | The Independent', '')
+            a_cache[0] = a_cache[0][:a_cache[0].find('</a>')]
+            for i in range(2):
+                b_cache.pop(0)
+            for i in range(6):
+                b_cache.pop(-1)
+            date_tokens = d_cache.split(' ')
+            d_cache = date_tokens[2] + '-' + date_tokens[1] + '-' + date_tokens[3]
 
-
-        if ('nationalreview.com' in url):
+        if ('reuters.com' in url):
+            t_cache[0] = t_cache[0].replace('| Reuters', '')
+            for i in range(6):
+                b_cache.pop(-1)
+            d_cache = d_cache[(d_cache.find(' ') + 1):(d_cache.find('|') - 1)]
+            d_cache = d_cache.replace(',', '')
+            d_cache = d_cache.replace(' ', '-')
+            cite = a_cache[0] + ', ' + d_cache + ', "' + t_cache[0].strip() + '," ' + url
+        elif ('nationalreview.com' in url):
             t_cache[0] = t_cache[0].replace('  | National Review', '')
             a_cache = ['National Review']
             d_cache = remove_brackets(d_cache)
@@ -591,7 +621,7 @@ def main(args):
                     if (len(a_cache) > 2):
                         authors_last += ', '
                         authors_first += ', '
-            """ Need handler for hyphenated names- make capital afterwards """
+            """ Need handler for hyphenated names- make capital afterwards; same with apostrophe, capital afterwards """
             d_cache = month_name_to_number(d_cache)
 
             """ Create cite. """
